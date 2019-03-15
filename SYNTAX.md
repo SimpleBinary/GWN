@@ -2,7 +2,7 @@
 
 I could not work it out fully, but I found some things
 
-```cs
+```go
 print <- "hi" 
 
 x <- 5 // I like this
