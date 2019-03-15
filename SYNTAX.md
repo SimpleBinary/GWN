@@ -15,6 +15,9 @@ for i in "hello" (
     print <- i
 )
 
+fn yo{} ( // I don't like this
+)
+
 ```
 
 I think we might edit it a bit, but it is a start
