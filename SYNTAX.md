@@ -2,7 +2,7 @@
 
 I could not work it out fully, but I found some things
 
-```
+```python
 print <- "hi" 
 
 x <- 5 // I like this
