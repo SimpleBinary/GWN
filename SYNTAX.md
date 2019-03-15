@@ -15,6 +15,6 @@ for i in "hello" (
     print <- i
 )
 
-
-
 ```
+
+I think we might edit it a bit, but it is a start
