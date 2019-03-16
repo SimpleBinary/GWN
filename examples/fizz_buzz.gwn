@@ -1,0 +1,7 @@
+fizzBuzz <-
+    {x % 15 == 0 | "FizzBuzz"},
+    {x % 5 == 0 | "Buzz"},
+    {x % 3 == 0 | "Fizz"},
+    {x | x -> toString}
+    
+print <- fizzBuzz <- 100
