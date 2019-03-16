@@ -11,5 +11,5 @@ fizzBuzz <-
     {x % 3 == 0 | "Fizz"},
     {x | x -> toString}
     
-print <- [1..100]->map <- fizzBuzz
+print <- [1..100] -> map <- fizzBuzz
 ```
