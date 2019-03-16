@@ -1,5 +1,7 @@
+# Prints the fibonacci numbers from 1 to 100
+
 fibonacci <-
-    {n <= 1 | n}
+    {n <= 1 | n},
     {n | fibonacci <- n - 1 <- n - 2}
     
-print <- fibonacci <- 21
+print <- [1..100]->map <- fibonacci
