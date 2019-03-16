@@ -2,6 +2,6 @@
 name = "gwn"
 version = "0.1.0"
 authors = ["SimpleBinary 40658215+SimpleBinary@users.noreply.github.com", "Dandigit <37099129+Dandigit@users.noreply.github.com>"]
-edition = "2018"
+edition = "2019"
 
 [dependencies]
