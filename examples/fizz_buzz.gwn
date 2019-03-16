@@ -1,7 +1,9 @@
+# Prints FizzBuzz from 1 to 100
+
 fizzBuzz <-
     {x % 15 == 0 | "FizzBuzz"},
     {x % 5 == 0 | "Buzz"},
     {x % 3 == 0 | "Fizz"},
     {x | x -> toString}
     
-print <- fizzBuzz <- 100
+print <- [1..100]->map <- fizzBuzz
