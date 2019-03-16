@@ -1,0 +1,7 @@
+[package]
+name = "gwn"
+version = "0.1.0"
+authors = ["Dandigit <37099129+Dandigit@users.noreply.github.com>"]
+edition = "2018"
+
+[dependencies]
