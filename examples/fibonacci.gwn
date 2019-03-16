@@ -4,4 +4,4 @@ fibonacci =
     {n <= 1 | n},
     {n | fibonacci <- n - 1 <- n - 2}
     
-print <- [1..100]->map <- fibonacci
+print <- [1..100] -> map <- fibonacci
