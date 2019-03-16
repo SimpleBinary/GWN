@@ -5,7 +5,7 @@ Think Python with purity and Haskell without hardness.
 ```php
 # FizzBuzz from 1 to 100
 
-fizzBuzz <-
+fizzBuzz =
     {x % 15 == 0 | "FizzBuzz"},
     {x % 5 == 0 | "Buzz"},
     {x % 3 == 0 | "Fizz"},
