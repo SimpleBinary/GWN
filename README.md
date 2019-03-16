@@ -1,2 +1,2 @@
 # GWN
-GWN is back - with an updated syntax.
+GWN is back with an updated syntax.
