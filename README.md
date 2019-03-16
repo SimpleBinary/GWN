@@ -1,3 +1,4 @@
+![GWN Logo](/media/GWN.png)
 # GWN
 GWN is a functional programming language that will solve all of your problems in life, guaranteed.
 Think Python with purity and Haskell without hardness. Quick writing time and Compiled.
