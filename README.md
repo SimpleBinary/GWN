@@ -8,7 +8,7 @@ Think Python with purity and Haskell without hardness.
 
 fizzBuzz =
     {x | x % 15 == 0 ? "FizzBuzz"
-       | x % 5 == 0  ? "Buzz"
+       | x % 5 == 0 ?  "Buzz"
        | x % 3 == 0 ?  "Fizz"
        | else ?        x -> toString}
     
