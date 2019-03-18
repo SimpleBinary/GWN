@@ -1,7 +1,8 @@
 # Prints the fibonacci numbers from 1 to 100
 
 fibonacci =
-    {n <= 1 | n},
+    {0 | 0},
+    {1 | 1},
     {n | fibonacci <- n - 1 <- n - 2}
     
 print <- [1..100] -> map <- fibonacci
