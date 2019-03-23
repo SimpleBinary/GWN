@@ -228,7 +228,7 @@ impl Scanner {
                 return Err(self.make_error("Expected closing '}' at end of function typename.".to_string()));
             }
 
-            return Ok(())
+            return Ok(());
         }
 
         // Basic type
@@ -240,7 +240,7 @@ impl Scanner {
             return Ok(());
         }
 
-        return Err(self.make_error("Expected typename.".to_string()));
+        Err(self.make_error("Expected typename.".to_string()))
     }
 
     fn skip_whitespace(&mut self) {
