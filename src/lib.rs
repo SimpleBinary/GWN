@@ -2,7 +2,6 @@ use std::io;
 use std::io::Write;
 
 use std::fs;
-use std::fs::File;
 
 mod scanner;
 use crate::scanner::{Scanner, TokenKind};
@@ -11,9 +10,11 @@ pub fn run(source: String) {
     let mut scanner = Scanner::new(source);
     
     let mut t = scanner.scan_token().unwrap();
+    println!("{:?}", t);
+
     while t.kind != TokenKind::Eof {
-        println!("{:?}", t);
         t = scanner.scan_token().unwrap();
+        println!("{:?}", t);
     }
 }
 

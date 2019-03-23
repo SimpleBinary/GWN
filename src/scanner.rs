@@ -84,11 +84,14 @@ impl Scanner {
         }
     }
 
+    // Scan a single token from 'source'. 
+    // Returns ScannerError on failure, due to:
+    // - unrecognised character
+    // - unrecognised escape sequence
+    // - unterminated string literal
     pub fn scan_token(&mut self) -> Result<Token, ScannerError> {
         self.skip_whitespace();
         self.start = self.current;
-
-        println!("s: {} c: {}", self.start, self.current);
 
         if self.is_at_end() {
             return Ok(self.make_token(TokenKind::Eof));
@@ -119,6 +122,8 @@ impl Scanner {
             ':' => Ok(self.make_token(TokenKind::Colon)),
             '|' => Ok(self.make_token(TokenKind::Pipe)),
             '?' => Ok(self.make_token(TokenKind::Question)),
+
+            '"' => self.scan_string(),
 
             '+' => {
                 let t = if self.consume('+') {TokenKind::PlusPlus}
@@ -161,7 +166,7 @@ impl Scanner {
                 Ok(self.make_token(TokenKind::Newline))
             },
 
-            _ => Err(self.make_error(format!("Unrecognised character '{}'.", c))),
+            _ => Err(self.make_error(format!("Rogue unrecognised character '{}'.", c))),
         }
     }
 
@@ -183,6 +188,7 @@ impl Scanner {
         }
     }
 
+    // Scan a number literal, e.g. '2.40' or '3'.
     fn scan_number(&mut self) -> Token {
         while self.peek().is_digit(10) {
             self.advance();
@@ -198,6 +204,7 @@ impl Scanner {
         self.make_token(TokenKind::Number)
     }
 
+    // Scan either an identifier or a keyword.
     fn scan_identifier(&mut self) -> Token {
         while is_identifier_body(self.peek()) {
             self.advance();
@@ -213,6 +220,45 @@ impl Scanner {
         })
     }
 
+    // Scan a string literal.
+    // This may fail, in which case a ScannerError will be returned, due to:
+    // - an unrecognised escape sequence
+    // - an unterminated string literal
+    fn scan_string(&mut self) -> Result<Token, ScannerError> {
+        let mut lexeme = String::new();
+
+        while !self.is_at_end() && self.peek() != '"' {
+            let c = self.advance();
+
+            // Check for escape sequences
+            if c == '\\' {
+                let escape = self.advance();
+                match escape {
+                    'n' => lexeme.push('\n'),
+                    't' => lexeme.push('\t'),
+                    'r' => lexeme.push('\r'),
+                    '"' => lexeme.push('"'),
+                    _ => return Err(self.make_error(format!("Unrecognised escape sequence '\\{}'.", escape))),
+                }
+            } else {
+                lexeme.push(c);
+            }
+        }
+
+        if self.is_at_end() {
+            return Err(self.make_error("Unterminated string literal.".to_string()));
+        }
+
+        self.advance();
+        Ok(Token {
+            kind: TokenKind::String,
+            line: self.line,
+            col: self.col,
+            lexeme,
+        })
+    }
+
+    // Create a new Token of the specified type at the current position
     fn make_token(&self, kind: TokenKind) -> Token {
         Token {
             kind,
@@ -222,6 +268,7 @@ impl Scanner {
         }
     }
 
+    // Create a new ScannerError at the current position
     fn make_error(&self, msg: String) -> ScannerError {
         ScannerError {
             msg,
