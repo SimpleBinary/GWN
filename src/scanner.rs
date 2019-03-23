@@ -14,6 +14,7 @@ pub enum TokenKind {
     Carat,          // '^'
     Percent,        // '%'
     Colon,          // ':'
+    Comma,          // ','
     Pipe,           // '|'
     Question,       // '?'
 
@@ -43,6 +44,7 @@ pub enum TokenKind {
     Number,
     String,
     Identifier,
+    Typename,
     Newline,
 
     Eof,
@@ -56,19 +58,19 @@ pub struct Token {
     pub lexeme: String,
 }
 
+#[derive(Debug)]
+pub struct ScannerError {
+    msg: String,
+    line: u32,
+    col: u32,
+}
+
 pub struct Scanner {
     source: Vec<char>,
 
     start: usize,
     current: usize,
 
-    line: u32,
-    col: u32,
-}
-
-#[derive(Debug)]
-pub struct ScannerError {
-    msg: String,
     line: u32,
     col: u32,
 }
@@ -120,6 +122,7 @@ impl Scanner {
             '^' => Ok(self.make_token(TokenKind::Carat)),
             '%' => Ok(self.make_token(TokenKind::Percent)),
             ':' => Ok(self.make_token(TokenKind::Colon)),
+            ',' => Ok(self.make_token(TokenKind::Comma)),
             '|' => Ok(self.make_token(TokenKind::Pipe)),
             '?' => Ok(self.make_token(TokenKind::Question)),
 
@@ -168,6 +171,76 @@ impl Scanner {
 
             _ => Err(self.make_error(format!("Rogue unrecognised character '{}'.", c))),
         }
+    }
+
+    // Scan a typename token from 'source'. Only call when expecting a typename.
+    // Returns a ScannerError on failure due to:
+    // - mismatched brackets
+    // - invalid typename
+    pub fn scan_typename(&mut self) -> Result<Token, ScannerError> {
+        self.skip_whitespace();
+        self.start = self.current;
+
+        if self.is_at_end() {
+            return Err(self.make_error("Expected typename.".to_string()));
+        }
+
+        self.consume_typename()?;
+
+        Ok(self.make_token(TokenKind::Typename))
+    }
+
+    fn consume_typename(&mut self) -> Result<(), ScannerError> {
+        // List type
+        if self.consume('[') {
+            self.consume_typename()?;
+            if !self.consume(']') {
+                return Err(self.make_error("Expected closing ']' after list typename.".to_string()))
+            }
+            return Ok(());
+        }
+
+        // Tuple type
+        if self.consume('(') {
+            while !self.consume(')') {
+                self.consume_typename()?;
+                
+                if self.peek() != ')' && !self.consume(',') {
+                    return Err(self.make_error("Expected ',' before next typename in tuple.".to_string()))
+                }
+            }
+            return Ok(());
+        }
+
+        // Function type
+        if self.consume('{') {
+            self.consume_typename()?;
+            if (self.peek() == '-' && self.peek_next() == '>')
+                    || (self.peek() == '<' && self.peek_next() == '-') {
+                self.advance();
+                self.advance();
+                self.consume_typename()?;
+            } else {
+                return Err(self.make_error("Expected '->' or '<-' after first type in function typename.".to_string()));
+            }
+
+            if !self.consume('}') {
+                return Err(self.make_error("Expected closing '}' at end of function typename.".to_string()));
+            }
+
+            return Ok(())
+        }
+
+        // Basic type
+        if is_identifier_start(self.peek()) {
+            self.advance();
+            while is_identifier_body(self.peek()) {
+                self.advance();
+            }
+            return Ok(());
+        }
+
+        return Err(self.make_error("Expected typename.".to_string()));
     }
 
     fn skip_whitespace(&mut self) {

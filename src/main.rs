@@ -5,7 +5,7 @@ fn main() {
 
     match args.len() {
         1 => gwn::run_repl(),
-        2 => gwn::run_file(args[0].clone()),
+        2 => gwn::run_file(args[1].clone()),
         _ => panic!("Too many arguments."), // TODO: Argv
     }
 }

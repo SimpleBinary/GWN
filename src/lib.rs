@@ -1,9 +1,11 @@
+mod scanner;
+mod ast;
+mod typ;
+
 use std::io;
 use std::io::Write;
-
 use std::fs;
 
-mod scanner;
 use crate::scanner::{Scanner, TokenKind};
 
 pub fn run(source: String) {
