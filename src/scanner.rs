@@ -49,10 +49,11 @@ pub enum TokenKind {
     Typename,
     Newline,
 
+    None,
     Eof,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub kind: TokenKind,
     pub line: u32,
@@ -61,7 +62,7 @@ pub struct Token {
 }
 
 pub struct Scanner {
-    source: Vec<char>,
+    pub source: Vec<char>,
 
     start: usize,
     current: usize,
@@ -340,6 +341,7 @@ impl Scanner {
     fn make_error(&self, msg: String) -> ScannerError {
         ScannerError {
             msg,
+            place: self.source[self.current],
             line: self.line,
             col: self.col,
         }
@@ -385,16 +387,21 @@ fn is_identifier_body(c: char) -> bool {
 #[derive(Debug)]
 pub struct ScannerError {
     msg: String,
+    place: char,
     line: u32,
     col: u32,
 }
 
 impl Reportable for ScannerError {
     fn position(&self) -> (u32, u32) {
-        return (self.line, self.col);
+        (self.line, self.col)
+    }
+
+    fn place(&self) -> String {
+        format!(" at '{}'", self.place)
     }
 
     fn message(&self) -> &String {
-        return &(self.msg);
+        &(self.msg)
     }
 }

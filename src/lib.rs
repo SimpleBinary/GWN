@@ -12,16 +12,13 @@ use std::io::Write;
 use std::fs;
 
 use crate::scanner::{Scanner, TokenKind};
+use crate::parser::Parser;
 
 pub fn run(source: String) {
-    let mut scanner = Scanner::new(source);
-    
-    let mut t = scanner.scan_token().unwrap();
-    println!("{:?}", t);
-
-    while t.kind != TokenKind::Eof {
-        t = scanner.scan_token().unwrap();
-        println!("{:?}", t);
+    let mut parser = Parser::new(source);
+    let ast = parser.parse();
+    for node in ast {
+        println!("{:?}", node);
     }
 }
 
