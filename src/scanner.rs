@@ -1,4 +1,6 @@
-#[derive(Debug, Clone, Copy, PartialEq)]
+use crate::error::Reportable;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TokenKind {
     // Bracket types
     LeftBrace,      // '{'
@@ -56,13 +58,6 @@ pub struct Token {
     pub line: u32,
     pub col: u32,
     pub lexeme: String,
-}
-
-#[derive(Debug)]
-pub struct ScannerError {
-    msg: String,
-    line: u32,
-    col: u32,
 }
 
 pub struct Scanner {
@@ -385,4 +380,21 @@ fn is_identifier_start(c: char) -> bool {
 
 fn is_identifier_body(c: char) -> bool {
     return is_identifier_start(c) || c.is_digit(10)
+}
+
+#[derive(Debug)]
+pub struct ScannerError {
+    msg: String,
+    line: u32,
+    col: u32,
+}
+
+impl Reportable for ScannerError {
+    fn position(&self) -> (u32, u32) {
+        return (self.line, self.col);
+    }
+
+    fn message(&self) -> &String {
+        return &(self.msg);
+    }
 }

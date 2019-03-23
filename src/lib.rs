@@ -1,4 +1,9 @@
+#[macro_use]
+extern crate lazy_static;
+
 mod scanner;
+mod parser;
+mod error;
 mod ast;
 mod typ;
 
