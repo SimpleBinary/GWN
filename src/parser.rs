@@ -73,6 +73,16 @@ impl Parser {
         }
     }
 
+    fn parse_bool(&mut self) -> Result<Expr, ParserError> {
+        let value = match self.previous.kind {
+            TokenKind::True => true,
+            TokenKind::False => false,
+            _ => unreachable!(),
+        };
+
+        Ok(Literal::Bool(value).into())
+    }
+
     fn parse_string(&mut self) -> Result<Expr, ParserError> {
         let value = String::from(self.previous.lexeme.clone());
         Ok(Literal::String(Box::new(value)).into())
@@ -167,6 +177,18 @@ lazy_static! {
         (TokenKind::Number, ParseRule {
             precedence: Precedence::None,
             prefix: Some(Parser::parse_number), 
+            infix: None,
+        }),
+
+        (TokenKind::True, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_bool), 
+            infix: None,
+        }),
+
+        (TokenKind::False, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_bool), 
             infix: None,
         }),
 

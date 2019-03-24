@@ -42,6 +42,8 @@ pub enum TokenKind {
     And,            // 'and'
     Or,             // 'or'
     Not,            // 'not'
+    True,           // 'true'
+    False,          // 'false'
 
     // Other
     Number,
@@ -216,6 +218,8 @@ impl Scanner {
             "and" => TokenKind::And,
             "or" => TokenKind::Or,
             "not" => TokenKind::Not,
+            "true" => TokenKind::True,
+            "false" => TokenKind::False,
             _ => TokenKind::Identifier,
         })
     }
