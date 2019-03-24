@@ -1,4 +1,4 @@
-use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr, UnaryExpr, BinaryExpr, LogicalExpr};
+use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr, UnaryExpr, BinaryExpr, LogicalExpr, ApplyExpr};
 use crate::scanner::{Scanner, Token, TokenKind};
 use crate::typ::Typ;
 use crate::error::Report;
@@ -97,7 +97,9 @@ impl Parser {
         Ok(UnaryExpr{operator, operand}.into())
     }
 
-    fn parse_binary(&mut self, left: Expr) -> Result<Expr, ParserError> {
+    // Parse a left-associative binary operation. Almost all binary operators are
+    // left-associative, except for `:` and `<-`.
+    fn parse_binary_left(&mut self, left: Expr) -> Result<Expr, ParserError> {
         let operator = self.previous.clone();
         let rule = get_parse_rule(operator.kind);
 
@@ -105,10 +107,31 @@ impl Parser {
         // precedence higher than the rule says.
         let right = self.parse_precedence(Precedence::from((rule.precedence as u32) + 1))?;
 
-        // Check if the operation is a LogicalExpr or just a normal BinaryExpr.
+        // Check if the operation is a LogicalExpr, an ApplyExpr or just a normal BinaryExpr.
         match operator.kind {
             TokenKind::And | TokenKind::Or =>
                 Ok(LogicalExpr{left, right, operator}.into()),
+
+            TokenKind::RightArrow =>
+                Ok(ApplyExpr{arg: left, func: right, operator}.into()),
+            
+            _ =>
+                Ok(BinaryExpr{left, right, operator}.into())
+        }
+    }
+
+    // Parse a right-associative binary operation. Only `:` and `<-` are right-associative.
+    fn parse_binary_right(&mut self, left: Expr) -> Result<Expr, ParserError> {
+        let operator = self.previous.clone();
+        let rule = get_parse_rule(operator.kind);
+
+        // Right associative, so parse at the same level of precedence as the rule.
+        let right = self.parse_precedence(rule.precedence)?;
+
+        // Check if the operation is a LogicalExpr, an ApplyExpr or just a normal BinaryExpr.
+        match operator.kind {
+            TokenKind::LeftArrow =>
+                Ok(ApplyExpr{func: left, arg: right, operator}.into()),
             
             _ =>
                 Ok(BinaryExpr{left, right, operator}.into())
@@ -178,8 +201,7 @@ pub enum Precedence {
     Term,
     Factor,
     Power,
-    ApplyRight, // fn <- arg
-    ApplyLeft, // arg -> fn
+    Apply,
     Unary,
     Primary,
 }
@@ -195,10 +217,9 @@ impl From<u32> for Precedence {
             5 => Precedence::Term,
             6 => Precedence::Factor,
             7 => Precedence::Power,
-            8 => Precedence::ApplyRight,
-            9 => Precedence::ApplyLeft,
-            10 => Precedence::Unary,
-            11 => Precedence::Primary,
+            8 => Precedence::Apply,
+            9 => Precedence::Unary,
+            10 => Precedence::Primary,
             _ => Precedence::None
         }
     }
@@ -246,7 +267,7 @@ lazy_static! {
         (TokenKind::Minus, ParseRule {
             precedence: Precedence::Term,
             prefix: Some(Parser::parse_unary), 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::Not, ParseRule {
@@ -258,68 +279,92 @@ lazy_static! {
         (TokenKind::Plus, ParseRule {
             precedence: Precedence::Term,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::Slash, ParseRule {
             precedence: Precedence::Factor,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::Star, ParseRule {
             precedence: Precedence::Factor,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::Percent, ParseRule {
             precedence: Precedence::Factor,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::Carat, ParseRule {
             precedence: Precedence::Power,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::EqualEqual, ParseRule {
             precedence: Precedence::Equality,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::BangEqual, ParseRule {
             precedence: Precedence::Equality,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::Greater, ParseRule {
             precedence: Precedence::Comparison,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::GreaterEqual, ParseRule {
             precedence: Precedence::Comparison,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::Less, ParseRule {
             precedence: Precedence::Comparison,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
 
         (TokenKind::LessEqual, ParseRule {
             precedence: Precedence::Comparison,
             prefix: None, 
-            infix: Some(Parser::parse_binary),
+            infix: Some(Parser::parse_binary_left),
         }),
+
+        (TokenKind::PlusPlus, ParseRule {
+            precedence: Precedence::Term,
+            prefix: None, 
+            infix: Some(Parser::parse_binary_left),
+        }),
+
+        (TokenKind::Colon, ParseRule {
+            precedence: Precedence::Term,
+            prefix: None,
+            infix: Some(Parser::parse_binary_right),
+        }),
+
+        (TokenKind::LeftArrow, ParseRule {
+            precedence: Precedence::Apply,
+            prefix: None,
+            infix: Some(Parser::parse_binary_right),
+        }),
+
+        (TokenKind::RightArrow, ParseRule {
+            precedence: Precedence::Apply,
+            prefix: None,
+            infix: Some(Parser::parse_binary_left),
+        })
     ].into_iter().collect();
 }
 
