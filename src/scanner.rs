@@ -15,7 +15,6 @@ pub enum TokenKind {
     Star,           // '*'
     Carat,          // '^'
     Percent,        // '%'
-    Bang,           // '!'
     Colon,          // ':'
     Comma,          // ','
     Pipe,           // '|'
@@ -119,7 +118,6 @@ impl Scanner {
             '*' => Ok(self.make_token(TokenKind::Star)),
             '^' => Ok(self.make_token(TokenKind::Carat)),
             '%' => Ok(self.make_token(TokenKind::Percent)),
-            '!' => Ok(self.make_token(TokenKind::Bang)),
             ':' => Ok(self.make_token(TokenKind::Colon)),
             ',' => Ok(self.make_token(TokenKind::Comma)),
             '|' => Ok(self.make_token(TokenKind::Pipe)),

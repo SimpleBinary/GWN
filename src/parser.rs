@@ -1,4 +1,4 @@
-use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr, UnaryExpr};
+use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr, UnaryExpr, BinaryExpr, LogicalExpr};
 use crate::scanner::{Scanner, Token, TokenKind};
 use crate::typ::Typ;
 use crate::error::Report;
@@ -46,13 +46,12 @@ impl Parser {
         if let Some(prefix_fn) = prefix_fn {
             let mut expr = prefix_fn(self)?;
 
-            while get_parse_rule(self.previous.kind).precedence >= precedence {
+            while precedence <= get_parse_rule(self.current.kind).precedence {
                 self.advance();
                 
-                let infix_fn = get_parse_rule(self.current.kind).infix;
+                let infix_fn = get_parse_rule(self.previous.kind).infix;
 
                 if let Some(infix_fn) = infix_fn {
-                    self.advance();
                     expr = infix_fn(self, expr)?;
                 }
             }
@@ -98,6 +97,24 @@ impl Parser {
         Ok(UnaryExpr{operator, operand}.into())
     }
 
+    fn parse_binary(&mut self, left: Expr) -> Result<Expr, ParserError> {
+        let operator = self.previous.clone();
+        let rule = get_parse_rule(operator.kind);
+
+        // Left associative, so parse the right operand at one level of 
+        // precedence higher than the rule says.
+        let right = self.parse_precedence(Precedence::from((rule.precedence as u32) + 1))?;
+
+        // Check if the operation is a LogicalExpr or just a normal BinaryExpr.
+        match operator.kind {
+            TokenKind::And | TokenKind::Or =>
+                Ok(LogicalExpr{left, right, operator}.into()),
+            
+            _ =>
+                Ok(BinaryExpr{left, right, operator}.into())
+        }
+    }
+
     fn advance(&mut self) {
         self.previous = self.current.clone();
         let mut token = self.scanner.scan_token();
@@ -115,6 +132,7 @@ impl Parser {
             }
         }
 
+        println!("{:?}", self.current)
     }
 
     fn check(&self, kind: TokenKind) -> bool {
@@ -159,10 +177,31 @@ pub enum Precedence {
     Comparison,
     Term,
     Factor,
+    Power,
     ApplyRight, // fn <- arg
     ApplyLeft, // arg -> fn
     Unary,
     Primary,
+}
+
+impl From<u32> for Precedence {
+    fn from(x: u32) -> Self {
+        match x {
+            0 => Precedence::None,
+            1 => Precedence::Or,
+            2 => Precedence::And,
+            3 => Precedence::Equality,
+            4 => Precedence::Comparison,
+            5 => Precedence::Term,
+            6 => Precedence::Factor,
+            7 => Precedence::Power,
+            8 => Precedence::ApplyRight,
+            9 => Precedence::ApplyLeft,
+            10 => Precedence::Unary,
+            11 => Precedence::Primary,
+            _ => Precedence::None
+        }
+    }
 }
 
 struct ParseRule {
@@ -205,15 +244,45 @@ lazy_static! {
         }),
 
         (TokenKind::Minus, ParseRule {
+            precedence: Precedence::Term,
+            prefix: Some(Parser::parse_unary), 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::Not, ParseRule {
             precedence: Precedence::None,
             prefix: Some(Parser::parse_unary), 
             infix: None,
         }),
 
-        (TokenKind::Bang, ParseRule {
-            precedence: Precedence::None,
-            prefix: Some(Parser::parse_unary), 
-            infix: None,
+        (TokenKind::Plus, ParseRule {
+            precedence: Precedence::Term,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::Slash, ParseRule {
+            precedence: Precedence::Factor,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::Star, ParseRule {
+            precedence: Precedence::Factor,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::Percent, ParseRule {
+            precedence: Precedence::Factor,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::Carat, ParseRule {
+            precedence: Precedence::Power,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
         }),
     ].into_iter().collect();
 }
