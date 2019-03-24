@@ -37,6 +37,9 @@ pub enum TokenKind {
     Minus,          // '-'
     RightArrow,     // '->'
 
+    // 2 character
+    BangEqual,
+
     // Keywords
     And,            // 'and'
     Or,             // 'or'
@@ -124,6 +127,14 @@ impl Scanner {
             '?' => Ok(self.make_token(TokenKind::Question)),
 
             '"' => self.scan_string(),
+
+            '!' => {
+                if self.consume('=') {
+                    Ok(self.make_token(TokenKind::Question))
+                } else {
+                    Err(self.make_error(format!("Rogue unrecognised character '{}'.", c)))
+                }
+            },
 
             '+' => {
                 let t = if self.consume('+') {TokenKind::PlusPlus}

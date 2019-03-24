@@ -284,6 +284,42 @@ lazy_static! {
             prefix: None, 
             infix: Some(Parser::parse_binary),
         }),
+
+        (TokenKind::EqualEqual, ParseRule {
+            precedence: Precedence::Equality,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::BangEqual, ParseRule {
+            precedence: Precedence::Equality,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::Greater, ParseRule {
+            precedence: Precedence::Comparison,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::GreaterEqual, ParseRule {
+            precedence: Precedence::Comparison,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::Less, ParseRule {
+            precedence: Precedence::Comparison,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
+
+        (TokenKind::LessEqual, ParseRule {
+            precedence: Precedence::Comparison,
+            prefix: None, 
+            infix: Some(Parser::parse_binary),
+        }),
     ].into_iter().collect();
 }
 
