@@ -89,6 +89,12 @@ pub enum ExprKind {
     // A function literal, like `{x y | x + y}`
     Func(Box<FuncExpr>),
 
+    // A tuple, e.g. (1, "e")
+    Tuple(Box<TupleExpr>),
+
+    // A list, e.g. [1, 2, 3]
+    List(Box<ListExpr>),
+
     // A regular literal value, e.g. `"goo"`, `42.42`
     Literal(Literal),
 }
@@ -192,6 +198,28 @@ pub struct FuncGuard {
     pub condition: Expr,
     pub value: Expr,
 }
+
+#[derive(Debug)]
+pub struct TupleExpr {
+    pub elements: Vec<Expr>,
+    
+    // Hold on to the opening paren token in case we need to report
+    // an error with it.
+    pub paren: Token
+}
+
+into_expr!(TupleExpr, Tuple);
+
+#[derive(Debug)]
+pub struct ListExpr {
+    pub elements: Vec<Expr>,
+
+    // Hold on to the opening square bracket token in case we need to report
+    // an error with it.
+    pub square: Token
+}
+
+into_expr!(ListExpr, List);
 
 #[derive(Debug)]
 pub enum Literal {

@@ -1,4 +1,4 @@
-use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr, UnaryExpr, BinaryExpr, LogicalExpr, ApplyExpr};
+use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr, UnaryExpr, BinaryExpr, LogicalExpr, ApplyExpr, TupleExpr, ListExpr};
 use crate::scanner::{Scanner, Token, TokenKind};
 use crate::typ::Typ;
 use crate::error::Report;
@@ -31,7 +31,7 @@ impl Parser {
             if let Ok(expr) = expr {
                 ast.push(expr);
             } else if let Err(err) = expr {
-                err.report_in(&self.scanner.source);
+                err.report_in(&self.scanner.source.iter().collect());
                 self.advance();
             };
         }
@@ -138,6 +138,48 @@ impl Parser {
         }
     }
 
+    fn parse_tuple(&mut self) -> Result<Expr, ParserError> {
+        let paren = self.previous.clone();
+        let expression = self.parse_precedence(Precedence::Or)?;
+
+        let value = if self.consume(TokenKind::Comma) {
+            let mut elements: Vec<Expr> = vec![expression];
+            elements.push(self.parse_precedence(Precedence::Or)?);
+            
+            while self.consume(TokenKind::Comma) {
+                elements.push(self.parse_precedence(Precedence::Or)?);
+            }
+
+            Ok(TupleExpr{elements, paren}.into())
+        } else {
+            // A single element tuple is equivalent to the element
+            Ok(expression)
+        };
+
+        self.expect(TokenKind::RightParen, "Expected ')' after tuple.".to_string())?;
+        value
+    }
+
+    fn parse_list(&mut self) -> Result<Expr, ParserError> {
+        let square = self.previous.clone();
+        let mut elements: Vec<Expr> = vec![];
+
+        if !self.check(TokenKind::RightSquare) {
+            elements.push(self.parse_precedence(Precedence::Or)?);
+        }
+
+        while self.consume(TokenKind::Comma) {
+            elements.push(self.parse_precedence(Precedence::Or)?);
+        }
+
+        self.expect(TokenKind::RightSquare, "Expected ']' after list.".to_string())?;
+        Ok(ListExpr{elements, square}.into())
+    }
+
+    /*fn parse_function(&mut self) -> Result<Expr, ParserError> {
+
+    }*/
+
     fn advance(&mut self) {
         self.previous = self.current.clone();
         let mut token = self.scanner.scan_token();
@@ -146,7 +188,7 @@ impl Parser {
             self.current = token;
         } else {
             while let Err(err) = token { 
-                err.report_in(&self.scanner.source);
+                err.report_in(&self.scanner.source.iter().collect());
                 token = self.scanner.scan_token();
             }
             
@@ -154,8 +196,6 @@ impl Parser {
                 self.current = token;
             }
         }
-
-        println!("{:?}", self.current)
     }
 
     fn check(&self, kind: TokenKind) -> bool {
@@ -263,6 +303,19 @@ lazy_static! {
             prefix: Some(Parser::parse_constant), 
             infix: None,
         }),
+
+        (TokenKind::LeftParen, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_tuple), 
+            infix: None,
+        }),
+
+        (TokenKind::LeftSquare, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_list), 
+            infix: None,
+        }),
+
 
         (TokenKind::Minus, ParseRule {
             precedence: Precedence::Term,

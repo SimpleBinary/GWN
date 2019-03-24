@@ -10,5 +10,6 @@ pub enum Typ {
     Bool,
     String,
 
+    List(Box<Typ>),
     Func(Box<Typ>, Box<Typ>),
 }

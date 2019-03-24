@@ -168,13 +168,16 @@ impl Scanner {
             },
 
             '\n' => {
+                let token = self.make_token(TokenKind::Newline);
+
                 self.col = 0;
                 self.line += 1;
 
                 while !self.is_at_end() && self.consume('\n') {
                     self.line += 1;
                 }
-                Ok(self.make_token(TokenKind::Newline))
+                
+                Ok(token)
             },
 
             _ => Err(self.make_error(format!("Rogue unrecognised character '{}'.", c))),
