@@ -166,7 +166,6 @@ into_expr!(FuncExpr, Func);
 // {x | "is not zero or one"}
 // ```
 // Each comma-seperated body is a 'case'.
-
 #[derive(Debug)]
 pub struct FuncCase {
     param: Pattern

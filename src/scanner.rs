@@ -321,7 +321,7 @@ pub struct ScannerError {
     col: u32,
 }
 
-impl Reportable for ScannerError {
+impl Report for ScannerError {
     fn position(&self) -> (u32, u32) {
         (self.line, self.col)
     }

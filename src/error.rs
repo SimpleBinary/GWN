@@ -1,4 +1,4 @@
-pub trait Reportable {
+pub trait Report {
     fn position(&self) -> (u32, u32);
     fn message(&self) -> &String;
     fn place(&self) -> String;

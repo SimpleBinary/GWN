@@ -175,7 +175,7 @@ pub struct ParserError {
     msg: String,
 }
 
-impl Reportable for ParserError {
+impl Report for ParserError {
     fn position(&self) -> (u32, u32) {
         (self.token.line, self.token.col)
     }
