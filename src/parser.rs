@@ -1,4 +1,4 @@
-use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr};
+use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr, UnaryExpr};
 use crate::scanner::{Scanner, Token, TokenKind};
 use crate::typ::Typ;
 use crate::error::Report;
@@ -80,6 +80,12 @@ impl Parser {
 
     fn parse_constant(&mut self) -> Result<Expr, ParserError> {
         Ok(ConstantExpr{name: self.previous.clone()}.into())
+    }
+
+    fn parse_unary(&mut self) -> Result<Expr, ParserError> {
+        let operator = self.previous.clone();
+        let operand = self.parse_precedence(Precedence::Unary)?;
+        Ok(UnaryExpr{operator, operand}.into())
     }
 
     fn advance(&mut self) {
@@ -173,6 +179,18 @@ lazy_static! {
         (TokenKind::Identifier, ParseRule {
             precedence: Precedence::None,
             prefix: Some(Parser::parse_constant), 
+            infix: None,
+        }),
+
+        (TokenKind::Minus, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_unary), 
+            infix: None,
+        }),
+
+        (TokenKind::Bang, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_unary), 
             infix: None,
         }),
     ].into_iter().collect();

@@ -18,7 +18,7 @@ pub fn run(source: String) {
     let mut parser = Parser::new(source);
     let ast = parser.parse();
     for node in ast {
-        println!("{:?}", node);
+        println!("{:#?}", node);
     }
 }
 
