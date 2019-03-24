@@ -1,7 +1,7 @@
-use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind};
+use crate::ast::{Decl, Expr, Pattern, Literal, ExprKind, ConstantExpr};
 use crate::scanner::{Scanner, Token, TokenKind};
 use crate::typ::Typ;
-use crate::error::Reportable;
+use crate::error::Report;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
@@ -72,6 +72,15 @@ impl Parser {
             let value = self.previous.lexeme.parse::<i32>().unwrap();
             Ok(Literal::Int(value).into())
         }
+    }
+
+    fn parse_string(&mut self) -> Result<Expr, ParserError> {
+        let value = String::from(self.previous.lexeme.clone());
+        Ok(Literal::String(Box::new(value)).into())
+    }
+
+    fn parse_constant(&mut self) -> Result<Expr, ParserError> {
+        Ok(ConstantExpr{name: self.previous.clone()}.into())
     }
 
     fn advance(&mut self) {
@@ -153,6 +162,18 @@ lazy_static! {
         (TokenKind::Number, ParseRule {
             precedence: Precedence::None,
             prefix: Some(Parser::parse_number), 
+            infix: None,
+        }),
+
+        (TokenKind::String, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_string), 
+            infix: None,
+        }),
+
+        (TokenKind::Identifier, ParseRule {
+            precedence: Precedence::None,
+            prefix: Some(Parser::parse_constant), 
             infix: None,
         }),
     ].into_iter().collect();

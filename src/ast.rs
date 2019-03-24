@@ -112,49 +112,49 @@ macro_rules! into_expr {
 #[derive(Debug)]
 pub struct ConstantExpr {
     // The name of the constant
-    name: Token
+    pub name: Token
 }
 
 into_expr!(ConstantExpr, Constant);
 
 #[derive(Debug)]
 pub struct UnaryExpr {
-    operator: Token,
-    operand: Expr,
+    pub operator: Token,
+    pub operand: Expr,
 }
 
 into_expr!(UnaryExpr, Unary);
 
 #[derive(Debug)]
 pub struct BinaryExpr {
-    operator: Token,
-    left: Expr,
-    right: Expr,
+    pub operator: Token,
+    pub left: Expr,
+    pub right: Expr,
 }
 
 into_expr!(BinaryExpr, Binary);
 
 #[derive(Debug)]
 pub struct LogicalExpr {
-    operator: Token,
-    left: Expr,
-    right: Expr,
+    pub operator: Token,
+    pub left: Expr,
+    pub right: Expr,
 }
 
 into_expr!(LogicalExpr, Logical);
 
 #[derive(Debug)]
 pub struct ApplyExpr {
-    operator: Token,
-    func: Expr,
-    arg: Expr,
+    pub operator: Token,
+    pub func: Expr,
+    pub arg: Expr,
 }
 
 into_expr!(ApplyExpr, Apply);
 
 #[derive(Debug)]
 pub struct FuncExpr {
-    cases: Vec<FuncCase>
+    pub cases: Vec<FuncCase>
 }
 
 into_expr!(FuncExpr, Func);
@@ -168,8 +168,8 @@ into_expr!(FuncExpr, Func);
 // Each comma-seperated body is a 'case'.
 #[derive(Debug)]
 pub struct FuncCase {
-    param: Pattern
-    guards: Vec<FuncGuard>
+    pub param: Pattern,
+    pub guards: Vec<FuncGuard>
 }
 
 // For each case in a function, there may be any amount of guards.
@@ -189,8 +189,8 @@ pub struct FuncCase {
 // So, it actually has 1 guard that will always execute.
 #[derive(Debug)]
 pub struct FuncGuard {
-    condition: Expr,
-    value: Expr,
+    pub condition: Expr,
+    pub value: Expr,
 }
 
 #[derive(Debug)]

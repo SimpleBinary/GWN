@@ -1,4 +1,4 @@
-use crate::error::Reportable;
+use crate::error::Report;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TokenKind {
