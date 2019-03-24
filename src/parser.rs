@@ -29,7 +29,6 @@ impl Parser {
         while !self.is_at_end() {
             let expr = self.parse_precedence(Precedence::Or);
             if let Ok(expr) = expr {
-                println!("{:?}", expr);
                 ast.push(expr);
             } else if let Err(err) = expr {
                 err.report_in(&self.scanner.source);
