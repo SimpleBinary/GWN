@@ -1,1 +1,3 @@
-print <- input
+# Cat program - Prints the input as output
+
+print <- prompt
