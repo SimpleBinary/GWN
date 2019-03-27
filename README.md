@@ -19,3 +19,10 @@ print <- [1..100] -> map <- fizzBuzz
 - Minimal, easy to learn syntax
 - Static typing with Hindley-Milner type inference
 - Robust pattern matching
+
+## Useful Links
+[Wiki](https://github.com/gwn-lang/gwn/wiki)
+[Questions](https://github.com/gwn-lang/gwn/issues/5)
+[Abuse Report](https://github.com/gwn-lang/gwn/issues/4)
+[Codegolf and Challenges](https://github.com/gwn-lang/gwn/issues/8)
+Docs (Coming Soon...)
