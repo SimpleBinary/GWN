@@ -21,8 +21,8 @@ print <- [1..100] -> map <- fizzBuzz
 - Robust pattern matching
 
 ## Useful Links
-[Wiki](https://github.com/gwn-lang/gwn/wiki)
-[Questions](https://github.com/gwn-lang/gwn/issues/5)
-[Abuse Report](https://github.com/gwn-lang/gwn/issues/4)
-[Codegolf and Challenges](https://github.com/gwn-lang/gwn/issues/8)
-Docs (Coming Soon...)
+- [Wiki](https://github.com/gwn-lang/gwn/wiki)
+- [Questions](https://github.com/gwn-lang/gwn/issues/5)
+- [Abuse Report](https://github.com/gwn-lang/gwn/issues/4)
+- [Codegolf and Challenges](https://github.com/gwn-lang/gwn/issues/8)
+- Docs (Coming Soon...)
